@@ -1,10 +1,19 @@
+"""
+Code to connect an ESP32 to wifi, and publish information about temperature,
+humidity, pressure, and motion.
+
+Written by Alexander Gregory Swensen <alex.swensen@gmail.com>
+Distributed under the MIT License.
+"""
 from time import sleep
+from umqtt.simple import MQTTClient
+from machine import Pin
 import machine
 import bme280
 import network
 # Setup external LED, PIR Sensor, and I2C bus
-led = machine.Pin(4, machine.Pin.OUT)
-ir = machine.Pin(17, machine.Pin.IN)
+led = Pin(4, Pin.OUT)
+ir = Pin(17, Pin.IN)
 
 # setup WIFI
 wifi_ssid = "wifinetworkname"
