@@ -16,8 +16,8 @@ led = Pin(4, Pin.OUT)
 ir = Pin(17, Pin.IN)
 
 # setup WIFI
-wifi_ssid = "wifinetworkname"
-wifi_password = "wifipassword"
+wifi_ssid = "wifinetworkname" # wifinetworkname
+wifi_password = "wifipassword" # wifipassword
 station = network.WLAN(network.STA_IF)
 station.active(True)
 station.connect(wifi_ssid, wifi_password)
