@@ -2,12 +2,15 @@ from time import sleep
 import machine
 import bme280
 import network
+# Setup external LED, PIR Sensor, and I2C bus
 led = machine.Pin(4, machine.Pin.OUT)
-
-# i2c = machine.I2C()
-
-
 ir = machine.Pin(17, machine.Pin.IN)
+
+# setup WIFI
+station = network.WLAN(network.STA_IF)
+station.active(True)
+station.connect("YourNetworkName", "YourNetworkPassword")
+
 
 
 def turn_led_on():
