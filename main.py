@@ -11,6 +11,7 @@ from machine import Pin
 import machine
 import bme280
 import network
+import ubinascii
 
 # sensor pins
 led_pin = 4
@@ -20,6 +21,13 @@ pir_sensor_pin = 17
 wifi_ssid = "wifinetworkname" # wifinetworkname
 wifi_password = "wifipassword" # wifipassword
 
+# MQTT
+mqtt_user = "..." # User for MQTT
+mqtt_passsword = "..." # MQTT Password for that user
+mqtt_server = "..." # IP Address of mqtt server
+mqtt_topic = "..." # Topic for publishing to
+mqtt_client_id = ubinascii.hexlify(machine.unique_id()) # Unique ID of the board
+
 # Setup external LED, PIR Sensor, and I2C bus
 led = Pin(led_pin, Pin.OUT)
 ir = Pin(pir_sensor_pin, Pin.IN)
@@ -27,8 +35,6 @@ ir = Pin(pir_sensor_pin, Pin.IN)
 # setup WIFI
 station = network.WLAN(network.STA_IF)
 station.active(True)
-station.connect(wifi_ssid, wifi_password)
-
 
 def turn_led_on():
     """
