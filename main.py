@@ -18,15 +18,18 @@ led_pin = 4
 pir_sensor_pin = 17
 
 # Wifi credentials
-wifi_ssid = "wifinetworkname" # wifinetworkname
-wifi_password = "wifipassword" # wifipassword
+wifi_ssid = "..." # wifinetworkname
+wifi_password = "..." # wifipassword
 
 # MQTT
 mqtt_user = "..." # User for MQTT
 mqtt_passsword = "..." # MQTT Password for that user
-mqtt_server = "..." # IP Address of mqtt server
-mqtt_topic = "..." # Topic for publishing to
+mqtt_server = b"192.168.1.92" # IP Address of mqtt server
+mqtt_topic = b"home/sensors/1/motion" # Topic for publishing to
 mqtt_client_id = ubinascii.hexlify(machine.unique_id()) # Unique ID of the board
+
+mqtt = MQTTClient(mqtt_client_id, mqtt_server, 
+                  user=mqtt_user, password=mqtt_passsword)
 
 # Setup external LED, PIR Sensor, and I2C bus
 led = Pin(led_pin, Pin.OUT)
@@ -35,6 +38,10 @@ ir = Pin(pir_sensor_pin, Pin.IN)
 # setup WIFI
 station = network.WLAN(network.STA_IF)
 station.active(True)
+station.connect(wifi_ssid, wifi_password)
+
+# motion state
+motion_state = 0
 
 def turn_led_on():
     """
@@ -63,10 +70,36 @@ def check_connection():
             sleep(5)
             connected = station.isconnected()
 
-while True:
-    check_connection()
-    if ir.value() == 1:
-        turn_led_on()
-    else: 
-        turn_led_off()
-    sleep(0.1)
+def publish(val):
+    if station.isconnected():
+
+        value = bytes(str(val), 'utf-8')
+        mqtt.connect()
+        mqtt.publish(mqtt_topic, value)
+        mqtt.disconnect()
+
+def main():
+    global motion_state
+    while True:
+        check_connection()
+        while station.isconnected():
+
+            if ir.value() == 1:
+                if motion_state == 0:
+                    # Send message over MQTT
+                    publish(1)
+                    turn_led_on()
+
+                motion_state = ir.value()
+            else: 
+                if motion_state == 1:
+                    # Send message over MQTT
+                    publish(0)
+                    turn_led_off()
+                motion_state = 0
+            
+            sleep(0.1)
+
+
+if __name__ == "__main__":
+    main()
