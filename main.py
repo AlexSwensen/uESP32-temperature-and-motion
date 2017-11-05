@@ -9,7 +9,7 @@ from time import sleep
 from umqtt.simple import MQTTClient
 from machine import Pin
 import machine
-import bme280
+#import bme280
 import network
 import ubinascii
 
@@ -20,6 +20,10 @@ pir_sensor_pin = 17
 # Wifi credentials
 wifi_ssid = "..." # wifinetworkname
 wifi_password = "..." # wifipassword
+
+# Motion Status
+motion = "on" # when there is motion, send this to MQTT Broker
+still = "off" # When there is no motion, send this to MQTT Broker
 
 # MQTT
 mqtt_user = "..." # User for MQTT
@@ -73,31 +77,33 @@ def check_connection():
 def publish(val):
     if station.isconnected():
 
-        value = bytes(str(val), 'utf-8')
+        value = bytes(val, 'utf-8')
         mqtt.connect()
         mqtt.publish(mqtt_topic, value)
         mqtt.disconnect()
 
-def main():
+def check_for_motion():
     global motion_state
+    if ir.value() == 1:
+        if motion_state == 0:
+            # Send message over MQTT
+            publish(motion)
+            turn_led_on()
+
+        motion_state = ir.value()
+    else: 
+        if motion_state == 1:
+            # Send message over MQTT
+            publish(still)
+            turn_led_off()
+        motion_state = 0
+    
+
+def main():
     while True:
         check_connection()
         while station.isconnected():
-
-            if ir.value() == 1:
-                if motion_state == 0:
-                    # Send message over MQTT
-                    publish(1)
-                    turn_led_on()
-
-                motion_state = ir.value()
-            else: 
-                if motion_state == 1:
-                    # Send message over MQTT
-                    publish(0)
-                    turn_led_off()
-                motion_state = 0
-            
+            check_for_motion()
             sleep(0.1)
 
 
